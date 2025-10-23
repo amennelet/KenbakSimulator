@@ -33,18 +33,7 @@ const MEMORY_MAP = {
     INPUT_REGISTER: 0o377   // 377 en octal -> 255 en décimal
 } as const;
 
-// Interface pour le type des registres
-interface Registers {
-    A: number;          // Accumulateur A
-    B: number;          // Accumulateur B
-    X: number;          // Index X
-    P: number;          // Pointeur d'instruction
-    output: number;     // Registre de sortie
-    input: number;      // Registre d'entrée
-    overflowA: number;  // Dépassement et retenue pour A
-    overflowB: number;  // Dépassement et retenue pour B
-    overflowX: number;  // Dépassement et retenue pour X
-}
+
 
 export class MainScene extends Scene {
     private leds: Phaser.GameObjects.Arc[] = [];
@@ -60,10 +49,10 @@ export class MainScene extends Scene {
     private memoryDisplayTexts: Phaser.GameObjects.Text[][] = [];
     
     // LEDs de contrôle
-    private inputLed: Phaser.GameObjects.Arc;
-    private addrLed: Phaser.GameObjects.Arc;
-    private memLed: Phaser.GameObjects.Arc;
-    private runLed: Phaser.GameObjects.Arc;
+    private inputLed!: Phaser.GameObjects.Arc;
+    private addrLed!: Phaser.GameObjects.Arc;
+    private memLed!: Phaser.GameObjects.Arc;
+    private runLed!: Phaser.GameObjects.Arc;
     
     // Timer pour l'exécution automatique
     private executionTimer: Phaser.Time.TimerEvent | null = null;
@@ -93,7 +82,7 @@ export class MainScene extends Scene {
 
             // Ajouter l'interrupteur à bascule sous la LED (carré)
             const switchSize = 20; // Taille carrée
-            const switchButton = this.add.rectangle(x, y + 85, switchSize, switchSize, 0x202020)
+            this.add.rectangle(x, y + 85, switchSize, switchSize, 0x202020)
                 .setInteractive({ cursor: 'pointer' })
                 .on('pointerdown', () => this.setInputBit(7 - i)); // LED i correspond au bit (7-i)
             // Contour de l'interrupteur
@@ -173,7 +162,7 @@ export class MainScene extends Scene {
         this.inputLed = this.add.circle(inputX, inputStartY + 30, 10, 0x800000);
 
         // Bouton CLEAR (carré)
-        const clearButton = this.add.rectangle(inputX, inputStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(inputX, inputStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.clearInput());
         this.add.text(inputX, inputStartY + 95, 'CLEAR', {
@@ -197,7 +186,7 @@ export class MainScene extends Scene {
         this.addrLed = this.add.circle(addrX + 40, addrStartY + 30, 10, 0x800000);
 
         // Boutons DISP et SET côte à côte (carrés)
-        const dispButton = this.add.rectangle(addrX, addrStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(addrX, addrStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.displayAddress());
         this.add.text(addrX, addrStartY + 95, 'DISP', {
@@ -206,7 +195,7 @@ export class MainScene extends Scene {
             fontFamily: 'Arial'
         }).setOrigin(0.5);
 
-        const setButton = this.add.rectangle(addrX + 40, addrStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(addrX + 40, addrStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.setAddress());
         this.add.text(addrX + 40, addrStartY + 95, 'SET', {
@@ -230,7 +219,7 @@ export class MainScene extends Scene {
         this.memLed = this.add.circle(memX + 40, memStartY + 30, 10, 0x800000);
 
         // Boutons READ et STOR côte à côte (carrés)
-        const readButton = this.add.rectangle(memX, memStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(memX, memStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.readMemoryOperation());
         this.add.text(memX, memStartY + 95, 'READ', {
@@ -239,7 +228,7 @@ export class MainScene extends Scene {
             fontFamily: 'Arial'
         }).setOrigin(0.5);
 
-        const storButton = this.add.rectangle(memX + 40, memStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(memX + 40, memStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.storeMemory());
         this.add.text(memX + 40, memStartY + 95, 'STOR', {
@@ -263,7 +252,7 @@ export class MainScene extends Scene {
         this.runLed = this.add.circle(runX + 40, runStartY + 30, 10, 0x800000);
 
         // Boutons STRT et STOP côte à côte (carrés)
-        const strtButton = this.add.rectangle(runX, runStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(runX, runStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.startExecution());
         this.add.text(runX, runStartY + 95, 'STRT', {
@@ -272,7 +261,7 @@ export class MainScene extends Scene {
             fontFamily: 'Arial'
         }).setOrigin(0.5);
 
-        const stopButton = this.add.rectangle(runX + 40, runStartY + 70, 20, 20, 0x000000)
+        this.add.rectangle(runX + 40, runStartY + 70, 20, 20, 0x000000)
             .setInteractive({ cursor: 'pointer' })
             .on('pointerdown', () => this.stopExecution());
         this.add.text(runX + 40, runStartY + 95, 'STOP', {
@@ -373,7 +362,7 @@ export class MainScene extends Scene {
                 }).setOrigin(0.5);
 
                 // Ajouter un contour à la cellule
-                const rect = this.add.rectangle(x, y, cellWidth - 1, cellHeight - 1, 0xffffff, 0)
+                this.add.rectangle(x, y, cellWidth - 1, cellHeight - 1, 0xffffff, 0)
                     .setStrokeStyle(1, 0xcccccc);
 
                 this.memoryDisplayTexts[row][col] = cellText;
@@ -421,10 +410,7 @@ export class MainScene extends Scene {
         }
     }
 
-    private clearMemory(): void {
-        // Réinitialise toute la mémoire à 0
-        this.memory.fill(0);
-    }
+
     
     // Constantes pour les bits OF et CA
     private readonly OF_BIT = 0;  // Position du bit Overflow
@@ -432,20 +418,7 @@ export class MainScene extends Scene {
     private readonly OF_MASK = 1 << this.OF_BIT;
     private readonly CA_MASK = 1 << this.CA_BIT;
 
-    // Vérification du dépassement selon le mode de représentation
-    private checkOverflow(result: number, carry: boolean): boolean {
-        // Pour les modes signés, on vérifie si le signe est incorrect
-        return (result & 0x80) !== ((result + (carry ? 1 : 0)) & 0x80);
-    }
 
-    // Méthodes pour gérer les bits OF et CA
-    private getOverflowCarry(register: 'A' | 'B' | 'X'): { overflow: boolean, carry: boolean } {
-        const overflowReg = this.readMemory(MEMORY_MAP[`${register}_OVERFLOW`]);
-        return {
-            overflow: (overflowReg & this.OF_MASK) !== 0,
-            carry: (overflowReg & this.CA_MASK) !== 0
-        };
-    }
 
     private setOverflowCarry(register: 'A' | 'B' | 'X', overflow: boolean, carry: boolean): void {
         let value = 0;
@@ -473,20 +446,7 @@ export class MainScene extends Scene {
         this.addToRegister(register, (-value) & 0xFF);
     }
 
-    // Méthodes d'interprétation des nombres
-    private interpretAsPositive(value: number): number {
-        return value & 0xFF;  // 0 à 255
-    }
 
-    private interpretAsSigned(value: number): number {
-        // Conversion en nombre signé (-128 à +127)
-        return (value & 0x80) ? (value | ~0xFF) : (value & 0x7F);
-    }
-
-    private interpretAsFraction(value: number): number {
-        // Convertit en fraction (-1 à +127/128)
-        return this.interpretAsSigned(value) / 128;
-    }
 
     // Méthodes d'accès aux registres
     private getRegister(register: keyof typeof MEMORY_MAP): number {
@@ -497,20 +457,7 @@ export class MainScene extends Scene {
         this.writeMemory(MEMORY_MAP[register], value);
     }
 
-    // Méthodes spécifiques pour les registres principaux
-    private getRegisters(): Registers {
-        return {
-            A: this.getRegister('A_REGISTER'),
-            B: this.getRegister('B_REGISTER'),
-            X: this.getRegister('X_REGISTER'),
-            P: this.getRegister('P_REGISTER'),
-            output: this.getRegister('OUTPUT_REGISTER'),
-            input: this.getRegister('INPUT_REGISTER'),
-            overflowA: this.getRegister('A_OVERFLOW'),
-            overflowB: this.getRegister('B_OVERFLOW'),
-            overflowX: this.getRegister('X_OVERFLOW')
-        };
-    }
+
 
     // Méthode pour mettre à jour l'affichage des LEDs en fonction du registre de sortie
     private updateOutputDisplay(): void {
@@ -567,38 +514,7 @@ export class MainScene extends Scene {
         // OR n'affecte pas OF et CA
     }
 
-    private loadComplement(register: 'A'): void {
-        const value = this.getRegister(`${register}_REGISTER`);
-        this.setRegister(`${register}_REGISTER`, (~value) & 0xFF);
-        // Load Complement n'affecte pas OF et CA
-    }
 
-    // Opérations de décalage et rotation
-    private shiftLeft(register: 'A' | 'B'): void {
-        const value = this.getRegister(`${register}_REGISTER`);
-        this.setRegister(`${register}_REGISTER`, (value << 1) & 0xFF);
-        // Le décalage n'affecte pas OF et CA
-    }
-
-    private shiftRight(register: 'A' | 'B'): void {
-        const value = this.getRegister(`${register}_REGISTER`);
-        this.setRegister(`${register}_REGISTER`, value >> 1);
-        // Le décalage n'affecte pas OF et CA
-    }
-
-    private rotateLeft(register: 'A' | 'B'): void {
-        const value = this.getRegister(`${register}_REGISTER`);
-        const msb = (value & 0x80) >> 7;
-        this.setRegister(`${register}_REGISTER`, ((value << 1) | msb) & 0xFF);
-        // La rotation n'affecte pas OF et CA
-    }
-
-    private rotateRight(register: 'A' | 'B'): void {
-        const value = this.getRegister(`${register}_REGISTER`);
-        const lsb = value & 0x01;
-        this.setRegister(`${register}_REGISTER`, (value >> 1) | (lsb << 7));
-        // La rotation n'affecte pas OF et CA
-    }
 
     // Tests de conditions pour les branchements
     private testCondition(register: 'A' | 'B' | 'X', condition: 'NonZero' | 'Zero' | 'LessThanZero' | 'Positive' | 'PositiveNonZero'): boolean {
@@ -975,19 +891,27 @@ export class MainScene extends Scene {
 
         switch (opcode) {
             case 'ADD':
-                this.addToRegisterWithMode(register, addressingMode, operand);
+                if (register !== 'UNCONDITIONAL') {
+                    this.addToRegisterWithMode(register, addressingMode, operand);
+                }
                 break;
 
             case 'SUB':
-                this.subtractFromRegisterWithMode(register, addressingMode, operand);
+                if (register !== 'UNCONDITIONAL') {
+                    this.subtractFromRegisterWithMode(register, addressingMode, operand);
+                }
                 break;
 
             case 'LOAD':
-                this.loadRegister(register, addressingMode, operand);
+                if (register !== 'UNCONDITIONAL') {
+                    this.loadRegister(register, addressingMode, operand);
+                }
                 break;
 
             case 'STORE':
-                this.storeRegister(register, addressingMode, operand);
+                if (register !== 'UNCONDITIONAL') {
+                    this.storeRegister(register, addressingMode, operand);
+                }
                 break;
 
             case 'AND':
@@ -1362,32 +1286,5 @@ export class MainScene extends Scene {
         console.log('Execution stopped');
     }
 
-    // Exécution d'une seule instruction (pour débogage)
-    private singleStep(): void {
-        // Arrêter l'exécution automatique si elle est en cours
-        if (this.isRunning) {
-            this.stopExecution();
-        }
-        
-        // Exécuter une seule instruction
-        const wasRunning = this.isRunning;
-        this.isRunning = true; // Temporairement activer pour l'exécution
-        this.fetchAndExecute();
-        this.updateOutputDisplay();
-        
-        // Remettre l'état précédent si ce n'était pas en cours d'exécution
-        if (!wasRunning) {
-            this.isRunning = false;
-        }
-        
-        console.log('Single step executed');
-    }
 
-    // Nettoyage du timer
-    private cleanupTimer(): void {
-        if (this.executionTimer) {
-            this.executionTimer.destroy();
-            this.executionTimer = null;
-        }
-    }
 }
